@@ -1,9 +1,5 @@
 /**
- * authStore tests — auth service boundary and store actions.
- *
- * The Firebase client is mocked so tests need no real credentials or network.
- * Covers: error mapping (safe messages), session bootstrap, login/register/
- * logout state transitions, and ID-token passthrough.
+ * Auth service and store tests. Firebase is mocked; no real credentials.
  */
 import {
   createUserWithEmailAndPassword,

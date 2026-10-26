@@ -4,13 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 
 import { useAuthStore } from '../src/stores/authStore';
 
-/**
- * Root layout for StudyGenius AI.
- *
- * Starts the Firebase auth session listener on mount so a persisted session is
- * restored (authStore status moves off 'initializing'). Navigation guards are
- * added with the auth screens; this layout only owns session bootstrap.
- */
 export default function RootLayout() {
   useEffect(() => {
     useAuthStore.getState().bootstrap();

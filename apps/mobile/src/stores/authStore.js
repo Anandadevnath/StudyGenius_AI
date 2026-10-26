@@ -1,25 +1,7 @@
-/**
- * stores/authStore.js — Authentication state (Zustand).
- *
- * Proposal ref: §5.1, §8.2, §11 (state management). Owns auth session state
- * and exposes async actions that delegate to the auth service. Screens read
- * `status`/`user` and call actions; they do not call Firebase directly.
- *
- * `status` values:
- *   - 'initializing' — session bootstrap in progress (app start)
- *   - 'signedIn'     — an authenticated user is present
- *   - 'signedOut'    — no authenticated user
- */
-
 import { create } from 'zustand';
 
 import * as authService from '../services/firebase/auth';
 
-/**
- * Guards against attaching more than one Auth listener across fast refresh
- * or repeated bootstrap calls.
- * @type {null | (() => void)}
- */
 let unsubscribeAuthListener = null;
 
 export const useAuthStore = create((set, get) => ({
@@ -28,12 +10,7 @@ export const useAuthStore = create((set, get) => ({
   error: null,
   actionPending: false,
 
-  /**
-   * Subscribes to Firebase auth state and reflects it into the store. Safe to
-   * call more than once; only one listener is kept. Idempotent so app-start
-   * bootstrap and fast refresh do not stack listeners.
-   * @returns {() => void} unsubscribe
-   */
+  /** Subscribes to auth state changes; keeps only one listener. */
   bootstrap: () => {
     if (unsubscribeAuthListener) {
       return unsubscribeAuthListener;
@@ -50,7 +27,6 @@ export const useAuthStore = create((set, get) => ({
     return unsubscribeAuthListener;
   },
 
-  /** Removes the auth listener (used on unmount / sign-out teardown). */
   teardown: () => {
     if (unsubscribeAuthListener) {
       unsubscribeAuthListener();
@@ -93,10 +69,9 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  /** Clears the last displayed auth error (e.g. when leaving a form). */
   clearError: () => set({ error: null }),
 
-  /** @returns {Promise<string|null>} the current Firebase ID token, or null. */
+  /** @returns {Promise<string|null>} */
   getIdToken: () => (get().user ? authService.getIdToken() : Promise.resolve(null)),
 }));
 

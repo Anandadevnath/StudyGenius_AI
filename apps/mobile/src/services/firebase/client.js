@@ -1,19 +1,3 @@
-/**
- * services/firebase/client.js — Firebase client configuration and init.
- *
- * Proposal ref: §7 (stack), §10.3 (security), §14 (secrets).
- *
- * SECURITY: Only EXPO_PUBLIC_* values (Firebase client config) belong here.
- * These are bundled into the mobile app and are NOT secret. NEVER place the
- * Gemini API key, a Firebase Admin private key, or any service-account data
- * in this file or in any EXPO_PUBLIC_* variable.
- *
- * The Firebase app is created lazily and exactly once. Requiring this module
- * has no side effects, so importing it never crashes when configuration is
- * absent; the clear configuration error only surfaces when a feature actually
- * tries to use Firebase.
- */
-
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -29,8 +13,7 @@ const requiredPublicEnvKeys = [
 ];
 
 /**
- * Reads Firebase client config from EXPO_PUBLIC_* environment variables.
- * @returns {object} the config object
+ * Reads Firebase client config from EXPO_PUBLIC_* env vars.
  * @throws {Error} if any required variable is missing
  */
 export function getFirebaseClientConfig() {
@@ -59,10 +42,6 @@ export function getFirebaseClientConfig() {
   };
 }
 
-/**
- * Returns the singleton Firebase app, initializing it on first use.
- * @returns {import('firebase/app').FirebaseApp}
- */
 export function getFirebaseApp() {
   if (getApps().length > 0) {
     return getApp();
@@ -70,17 +49,14 @@ export function getFirebaseApp() {
   return initializeApp(getFirebaseClientConfig());
 }
 
-/** @returns {import('firebase/auth').Auth} the shared Firebase Auth instance. */
 export function getFirebaseAuth() {
   return getAuth(getFirebaseApp());
 }
 
-/** @returns {import('firebase/firestore').Firestore} the shared Firestore instance. */
 export function getFirebaseFirestore() {
   return getFirestore(getFirebaseApp());
 }
 
-/** @returns {import('firebase/storage').FirebaseStorage} the shared Storage instance. */
 export function getFirebaseStorage() {
   return getStorage(getFirebaseApp());
 }

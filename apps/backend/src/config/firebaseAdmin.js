@@ -1,17 +1,3 @@
-/**
- * config/firebaseAdmin.js — Firebase Admin SDK configuration.
- *
- * Proposal ref: §8 (AI backend verifies Firebase ID tokens), §10.3, §14.
- *
- * SECURITY: The Admin service-account credential is a PRIVATE key. It must
- * NEVER be committed to Git and must NEVER be sent to the mobile app. Provide
- * it via FIREBASE_SERVICE_ACCOUNT_PATH (a path outside version control) or
- * GOOGLE_APPLICATION_CREDENTIALS (application-default credentials).
- *
- * The Admin app is initialized lazily and exactly once, so requiring this
- * module has no side effects and tests can import it without credentials.
- */
-
 'use strict';
 
 const fs = require('fs');
@@ -20,7 +6,7 @@ const admin = require('firebase-admin');
 const { readEnv } = require('./env');
 
 /**
- * Returns the strategy for loading Admin credentials without performing I/O.
+ * Describes the credential-loading strategy without performing I/O.
  * @returns {{projectId: string, strategy: 'service-account-path'|'application-default'}}
  * @throws {Error} if no credential source is configured
  */
@@ -44,10 +30,6 @@ function getFirebaseAdminPlan() {
   );
 }
 
-/**
- * Builds credential options from the configured strategy.
- * @returns {{projectId: string, credential: import('firebase-admin').credential.Credential}}
- */
 function buildCredentialOptions() {
   const plan = getFirebaseAdminPlan();
 
@@ -67,10 +49,7 @@ function buildCredentialOptions() {
   };
 }
 
-/**
- * Initializes and returns the Firebase Admin app (singleton, lazy).
- * @returns {import('firebase-admin').app.App}
- */
+/** Initializes the Admin app lazily and exactly once. */
 function getFirebaseAdmin() {
   if (admin.apps.length > 0) {
     return admin.app();
@@ -78,25 +57,13 @@ function getFirebaseAdmin() {
   return admin.initializeApp(buildCredentialOptions());
 }
 
-/**
- * @returns {import('firebase-admin').auth.Auth} the Admin Auth instance.
- */
 function getAdminAuth() {
   getFirebaseAdmin();
   return admin.auth();
-}
-
-/** Test-only: resets the cached Admin app so a fresh config can be loaded. */
-function _resetFirebaseAdmin() {
-  if (admin.apps.length > 0) {
-    return Promise.all(admin.apps.map((app) => app.delete()));
-  }
-  return Promise.resolve();
 }
 
 module.exports = {
   getFirebaseAdminPlan,
   getFirebaseAdmin,
   getAdminAuth,
-  _resetFirebaseAdmin,
 };

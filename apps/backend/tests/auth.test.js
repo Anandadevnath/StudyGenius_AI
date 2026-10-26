@@ -1,9 +1,5 @@
 /**
- * tests/auth.test.js — Firebase ID-token verification middleware.
- *
- * Covers: missing token, malformed header, valid token, invalid token, and a
- * misconfigured Admin path. Admin Auth is mocked so tests need no real
- * credentials or network access.
+ * Firebase ID-token verification middleware tests. Admin Auth is mocked.
  */
 'use strict';
 
