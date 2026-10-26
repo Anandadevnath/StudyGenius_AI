@@ -315,13 +315,31 @@ key and Firebase Admin credentials server-side only; enforce Firestore/Storage
 rules; verify ID tokens and rate-limit the backend; validate inputs and AI
 response schemas.
 
+## Implemented so far
+
+Foundation plus the authentication/service layer:
+
+- **Firebase client + Auth service** (`apps/mobile/src/services/firebase/`):
+  lazy Firebase app init and an authentication boundary (`register`, `login`,
+  `logout`, `sendPasswordReset`, `subscribeToAuthChanges`, `getIdToken`) that
+  maps Firebase error codes to safe, user-facing messages.
+- **`authStore`** (`apps/mobile/src/stores/authStore.js`): session state
+  (`user`, `status`, `error`, `actionPending`) with session bootstrap.
+- **Backend ID-token verification** (`apps/backend/src/middleware/auth.js` and
+  `config/firebaseAdmin.js`): `requireAuth` verifies `Authorization: Bearer
+  <idToken>` via Firebase Admin, with an authenticated probe at
+  `GET /api/auth/me`.
+- Tests: auth middleware (backend) and auth service/store (mobile) are covered
+  by `npm test`.
+
+Not yet wired to UI: the login/register/reset screens remain placeholders and
+will call `authStore` in the next step.
+
 ## Not implemented yet
 
-No StudyGenius AI features exist. Specifically, none of the following are
-implemented:
+No other StudyGenius AI features exist yet. Specifically, none of the
+following are implemented:
 
-- Registration/login, Firebase authentication flows, persistent sessions,
-  password reset, sign-out (proposal §5.1).
 - Firestore CRUD, real data schemas, security rules (§10).
 - File upload/parsing, camera capture, Firebase Storage (§5.3, §11).
 - AI summary generation (§5.4).
@@ -334,9 +352,10 @@ implemented:
 - The Figma prototype, data model diagram, app icon, feature graphic,
   screenshots, APK, and final report (deliverables for later phases).
 
-The mobile routes are **placeholder screens**; the backend exposes only
-`/api/health`. Placeholder Firebase and Gemini config modules intentionally
-raise clear setup errors when unconfigured.
+The mobile routes are still **placeholder screens**; the backend exposes
+`/api/health` and the authenticated `/api/auth/me` probe. Placeholder Firebase
+and Gemini config modules intentionally raise clear setup errors when
+unconfigured.
 
 ## Future development stages (checklist)
 

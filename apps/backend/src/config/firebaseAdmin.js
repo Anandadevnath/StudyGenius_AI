@@ -1,20 +1,21 @@
 /**
- * config/firebaseAdmin.js — Firebase Admin SDK configuration (PLACEHOLDER).
+ * config/firebaseAdmin.js — Firebase Admin SDK configuration.
  *
  * Proposal ref: §8 (AI backend verifies Firebase ID tokens), §10.3, §14.
- *
- * This module does NOT initialize the Admin SDK and does NOT make network
- * calls. It only describes the credential-loading strategy and raises a
- * clear error if configuration is missing.
  *
  * SECURITY: The Admin service-account credential is a PRIVATE key. It must
  * NEVER be committed to Git and must NEVER be sent to the mobile app. Provide
  * it via FIREBASE_SERVICE_ACCOUNT_PATH (a path outside version control) or
- * GOOGLE_APPLICATION_CREDENTIALS. Do not download or generate fake
- * credentials during setup.
+ * GOOGLE_APPLICATION_CREDENTIALS (application-default credentials).
+ *
+ * The Admin app is initialized lazily and exactly once, so requiring this
+ * module has no side effects and tests can import it without credentials.
  */
 
 'use strict';
+
+const fs = require('fs');
+const admin = require('firebase-admin');
 
 const { readEnv } = require('./env');
 
@@ -44,16 +45,58 @@ function getFirebaseAdminPlan() {
 }
 
 /**
- * Initializes Firebase Admin — NOT IMPLEMENTED YET.
- * Implemented during feature development: initializeApp({ credential:
- * cert(serviceAccount), projectId }) and export admin.auth() for token
- * verification middleware.
+ * Builds credential options from the configured strategy.
+ * @returns {{projectId: string, credential: import('firebase-admin').credential.Credential}}
  */
-function getFirebaseAdmin() {
-  // Deliberately unimplemented. Guard the credential plan so callers get a
-  // clear setup error instead of a silent undefined.
-  getFirebaseAdminPlan();
-  throw new Error('Firebase Admin initialization is not implemented yet.');
+function buildCredentialOptions() {
+  const plan = getFirebaseAdminPlan();
+
+  if (plan.strategy === 'service-account-path') {
+    const serviceAccountPath = readEnv('FIREBASE_SERVICE_ACCOUNT_PATH', { required: true });
+    const raw = fs.readFileSync(serviceAccountPath, 'utf8');
+    const serviceAccount = JSON.parse(raw);
+    return {
+      projectId: plan.projectId,
+      credential: admin.credential.cert(serviceAccount),
+    };
+  }
+
+  return {
+    projectId: plan.projectId,
+    credential: admin.credential.applicationDefault(),
+  };
 }
 
-module.exports = { getFirebaseAdminPlan, getFirebaseAdmin };
+/**
+ * Initializes and returns the Firebase Admin app (singleton, lazy).
+ * @returns {import('firebase-admin').app.App}
+ */
+function getFirebaseAdmin() {
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
+  return admin.initializeApp(buildCredentialOptions());
+}
+
+/**
+ * @returns {import('firebase-admin').auth.Auth} the Admin Auth instance.
+ */
+function getAdminAuth() {
+  getFirebaseAdmin();
+  return admin.auth();
+}
+
+/** Test-only: resets the cached Admin app so a fresh config can be loaded. */
+function _resetFirebaseAdmin() {
+  if (admin.apps.length > 0) {
+    return Promise.all(admin.apps.map((app) => app.delete()));
+  }
+  return Promise.resolve();
+}
+
+module.exports = {
+  getFirebaseAdminPlan,
+  getFirebaseAdmin,
+  getAdminAuth,
+  _resetFirebaseAdmin,
+};

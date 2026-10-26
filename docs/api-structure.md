@@ -1,7 +1,7 @@
 # API Structure
 
-> **Status:** only `GET /api/health` exists. AI endpoints are planned and
-> **not implemented**.
+> **Status:** `GET /api/health` and the authenticated `GET /api/auth/me` probe
+> exist. AI endpoints are planned and **not implemented**.
 
 ## Base URL
 
@@ -13,10 +13,16 @@
 | Method | Path | Auth | Response |
 | --- | --- | --- | --- |
 | GET | `/api/health` | none | `200 { status: "ok", service, timestamp }` |
+| GET | `/api/auth/me` | Firebase ID token | `200 { user: { uid, email } }`; `401` when unauthenticated |
 | GET | `/` | none | `200 { service, docs }` |
 | * | `/api/*` (unknown) | none | `404 { error: { status, message } }` |
 
 All responses are JSON. Errors follow `{ error: { status, message } }`.
+
+`GET /api/auth/me` is an authenticated probe that exercises the ID-token
+verification path end to end without exposing a feature. It returns `401` for
+a missing, malformed, invalid or expired token, and `500` (without secrets)
+when the Admin SDK is misconfigured.
 
 ## Planned endpoints (not implemented)
 
@@ -27,8 +33,8 @@ All responses are JSON. Errors follow `{ error: { status, message } }`.
 | POST | `/api/ai/plan` | Firebase ID token | Suggest a study plan. |
 
 These routes will be mounted under `/api` and guarded by the auth middleware
-(`src/middleware/auth.js`, currently returns `501`), rate limiting
-(`src/middleware/rateLimit.js`), and Zod input validation
+(`src/middleware/auth.js`, which now verifies Firebase ID tokens), rate
+limiting (`src/middleware/rateLimit.js`), and Zod input validation
 (`src/validators/`).
 
 ## Conventions
