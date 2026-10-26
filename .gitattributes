@@ -1,0 +1,16 @@
+# Normalize line endings across platforms
+* text=auto eol=lf
+
+# Treat these as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.keystore binary
+*.jks binary
+*.apk binary
+*.aab binary
+
+# Exclude from language stats
+package-lock.json -diff linguist-generated
