@@ -1,22 +1,40 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 
-/**
- * Screen 2c: Forgot Password (PLACEHOLDER).
- *
- * Proposal ref: Section 5.1, Section 6 — password reset by email.
- * NOT IMPLEMENTED: no Firebase Auth sendPasswordResetEmail call, no form.
- */
+import { Text } from '../../src/components/Text';
+import { Button } from '../../src/components/Button';
+import { Input } from '../../src/components/Input';
+import { Badge } from '../../src/components/Badge';
+import { IconButton } from '../../src/components/IconButton';
+import { Screen } from '../../src/components/Screen';
+import { useTheme } from '../../src/theme/ThemeProvider';
+
 export default function ForgotPasswordScreen() {
+  const theme = useTheme();
+  const router = useRouter();
+  const { colors } = theme;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Reset Password</Text>
-      <Text style={styles.note}>Placeholder. Password reset is not implemented yet.</Text>
-    </View>
+    <Screen edges={['top', 'bottom']}>
+      <View style={styles.header}>
+        <IconButton name="arrow-back" onPress={() => router.back()} label="Go back" />
+      </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Badge label="✦  Account Recovery" tone="primary" />
+        <Text variant="headlineLg" color={colors.textHeading}>
+          Reset password
+        </Text>
+        <Text variant="body" color={colors.textBody}>
+          Enter your university email and we will send a password reset link.
+        </Text>
+        <Input label="University Email" icon="school-outline" placeholder="ananda@university.edu" />
+        <Button label="Send Reset Link" icon="mail-outline" onPress={() => router.back()} />
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 22, fontWeight: '700', color: '#0F172A' },
-  note: { fontSize: 12, color: '#94A3B8', marginTop: 12, textAlign: 'center' },
+  header: { paddingHorizontal: 16, paddingVertical: 8 },
+  content: { paddingHorizontal: 16, gap: 16 },
 });

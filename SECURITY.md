@@ -19,12 +19,21 @@ Privacy section (§14) and the Data Access section (§10.3).
 - **No real secrets exist in this repository.** All `.env.example` values are
   descriptive placeholders.
 
-## Authentication and authorization (planned)
+## Authentication and authorization
 
-- Use Firebase Authentication — passwords are never stored directly.
-- Enforce user-scoped Firestore and Storage rules
-  (`resource.data.ownerUid == request.auth.uid`).
-- The backend verifies Firebase ID tokens before accepting AI requests.
+- Firebase Authentication is used — passwords are never stored directly. The
+  mobile app talks to Firebase Auth through `services/firebase/auth.js`; ID
+  tokens are read on demand for backend calls and are never logged.
+- Firebase SDK error codes are mapped to safe, user-facing messages; raw SDK
+  messages are never shown to users. Password reset does not disclose whether
+  an account exists.
+- The backend verifies the Firebase ID token on protected routes via
+  `middleware/auth.js` (`Authorization: Bearer <idToken>`), attaching
+  `req.user = { uid, email }`. The token is never logged (logger redacts the
+  authorization header).
+- User-scoped Firestore and Storage rules
+  (`resource.data.ownerUid == request.auth.uid`) are enforced once the
+  Firestore/Storage feature lands.
 - Client-side validation is not a substitute for server-side authorization.
 
 ## API and backend

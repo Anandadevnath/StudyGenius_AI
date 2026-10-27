@@ -1,7 +1,12 @@
 # services/database/
 
-Expo SQLite offline cache and draft persistence (device feature committed in
-the proposal).
+Expo SQLite offline cache and draft persistence (proposal §11.1).
 
-PLACEHOLDER. Not implemented. Schema and migrations will live in
-`src/database/`; this service wires that schema to the app.
+- `cache.js` — cache service: `cacheNotes`, `getCachedNotes`,
+  `addPendingUpload`, `getPendingUploads`, `removePendingUpload`,
+  `clearUserCache`, `clearAllCache`. The DB handle is lazily opened and can be
+  injected for tests (`_setCacheDb`).
+
+Schema and migrations live in `src/database/schema.js`. Only selected data is
+cached — note metadata and pending (draft) uploads — never the whole dataset.
+Firestore remains the source of truth.

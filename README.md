@@ -315,28 +315,62 @@ key and Firebase Admin credentials server-side only; enforce Firestore/Storage
 rules; verify ID tokens and rate-limit the backend; validate inputs and AI
 response schemas.
 
+## Implemented so far
+
+Foundation plus the authentication, notes/service layers, and the full UI:
+
+- **Firebase client + Auth service** (`apps/mobile/src/services/firebase/`):
+  lazy Firebase app init and an authentication boundary (`register`, `login`,
+  `logout`, `sendPasswordReset`, `subscribeToAuthChanges`, `getIdToken`) that
+  maps Firebase error codes to safe, user-facing messages.
+- **`authStore`** (`apps/mobile/src/stores/authStore.js`): session state
+  (`user`, `status`, `error`, `actionPending`) with session bootstrap.
+- **Notes & files** (`apps/mobile/src/services/firebase/storage.js`,
+  `notes.js`, `fileValidation.js`): validated Storage upload with progress,
+  idempotent delete, and Firestore note metadata (`ownerUid`, paged list).
+  File paths are scoped under the owner UID.
+- **`notesStore`** (`apps/mobile/src/stores/notesStore.js`): cache-first note
+  list, pagination, upload orchestration, and a pending-draft fallback when an
+  upload fails.
+- **SQLite offline cache** (`apps/mobile/src/database/schema.js`,
+  `services/database/cache.js`): cached note metadata and pending uploads.
+- **Backend ID-token verification** (`apps/backend/src/middleware/auth.js` and
+  `config/firebaseAdmin.js`): `requireAuth` verifies `Authorization: Bearer
+  <idToken>` via Firebase Admin, with an authenticated probe at
+  `GET /api/auth/me`.
+- **Complete UI (all 8 screens)** matching the "Cognitive Luminary" design:
+  Welcome, Login/Register, Home Dashboard, Notes Library, AI Summary, AI Quiz,
+  Study Planner, and Progress & Profile. A reusable component library
+  (`apps/mobile/src/components/`) and theme tokens + `ThemeProvider`
+  (`apps/mobile/src/theme/`) back every screen, with the Plus Jakarta Sans /
+  Inter fonts bundled in `assets/fonts/`. The 5-tab bottom navigation uses the
+  proposal's icons.
+- Tests: auth, file validation, notes, cache, and the UI components/theme
+  fixtures are covered by `npm test`.
+
+The screens currently render from `src/data/mockData.js`. Wiring them to the
+real stores (Firebase Auth, Firestore, the AI backend) is the next step, so no
+screen claims live data yet.
+
 ## Not implemented yet
 
-No StudyGenius AI features exist. Specifically, none of the following are
-implemented:
+The following are still not implemented:
 
-- Registration/login, Firebase authentication flows, persistent sessions,
-  password reset, sign-out (proposal §5.1).
-- Firestore CRUD, real data schemas, security rules (§10).
-- File upload/parsing, camera capture, Firebase Storage (§5.3, §11).
-- AI summary generation (§5.4).
+- Firestore **security rules** and Storage rules (drafted, not enforced) (§10).
+- AI summary generation and the backend summary endpoint (§5.4).
 - Quiz generation, scoring, attempts (§5.5).
-- Study planner and AI schedule suggestions (§5.6).
-- Progress tracking and statistics (§5.7).
+- Study planner AI suggestions and saved plans (§5.6).
+- Progress tracking from real attempts (§5.7).
 - Reminder scheduling / notifications (§5.8).
-- Offline caching and synchronization (§11.1).
-- Real UI screens, styling, components (§6, §12).
+- Camera/image picker and document picker wired to the Library screen (§5.3).
+- Screens are **UI-only**: they render mock data, not live Firestore/AI data.
 - The Figma prototype, data model diagram, app icon, feature graphic,
   screenshots, APK, and final report (deliverables for later phases).
 
-The mobile routes are **placeholder screens**; the backend exposes only
-`/api/health`. Placeholder Firebase and Gemini config modules intentionally
-raise clear setup errors when unconfigured.
+The mobile routes are still **placeholder screens**; the backend exposes
+`/api/health` and the authenticated `/api/auth/me` probe. Placeholder Firebase
+and Gemini config modules intentionally raise clear setup errors when
+unconfigured.
 
 ## Future development stages (checklist)
 

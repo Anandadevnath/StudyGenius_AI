@@ -1,22 +1,7 @@
-/**
- * services/firebase/client.js — Firebase client configuration (PLACEHOLDER).
- *
- * Proposal ref: §7 (stack), §10.3 (security), §14 (secrets).
- *
- * SECURITY: Only EXPO_PUBLIC_* values (Firebase client config) belong here.
- * These are bundled into the mobile app and are NOT secret. NEVER place the
- * Gemini API key, a Firebase Admin private key, or any service-account data
- * in this file or in any EXPO_PUBLIC_* variable.
- *
- * This module is a stub. It does NOT initialize Firebase and does NOT make
- * network calls. It validates that configuration is present and throws a
- * clear, actionable error when it is not, so that missing setup surfaces as
- * an understandable message rather than a confusing crash.
- *
- * Implemented later (NOT now): initializeApp(), getAuth(), getFirestore(),
- * getStorage(). Firebase Auth/Firestore/Storage access will be direct from
- * the client; the backend is used only for AI calls + ID-token verification.
- */
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const requiredPublicEnvKeys = [
   'EXPO_PUBLIC_FIREBASE_API_KEY',
@@ -28,8 +13,7 @@ const requiredPublicEnvKeys = [
 ];
 
 /**
- * Reads Firebase client config from EXPO_PUBLIC_* environment variables.
- * @returns {object} the config object
+ * Reads Firebase client config from EXPO_PUBLIC_* env vars.
  * @throws {Error} if any required variable is missing
  */
 export function getFirebaseClientConfig() {
@@ -58,4 +42,29 @@ export function getFirebaseClientConfig() {
   };
 }
 
-export default { getFirebaseClientConfig };
+export function getFirebaseApp() {
+  if (getApps().length > 0) {
+    return getApp();
+  }
+  return initializeApp(getFirebaseClientConfig());
+}
+
+export function getFirebaseAuth() {
+  return getAuth(getFirebaseApp());
+}
+
+export function getFirebaseFirestore() {
+  return getFirestore(getFirebaseApp());
+}
+
+export function getFirebaseStorage() {
+  return getStorage(getFirebaseApp());
+}
+
+export default {
+  getFirebaseClientConfig,
+  getFirebaseApp,
+  getFirebaseAuth,
+  getFirebaseFirestore,
+  getFirebaseStorage,
+};

@@ -53,6 +53,42 @@ Fill in `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, and a
 `FIREBASE_SERVICE_ACCOUNT_PATH` (or `GOOGLE_APPLICATION_CREDENTIALS`). See
 [firebase-setup.md](./firebase-setup.md).
 
+## Complete variable reference (both members)
+
+Every environment variable the app reads, who owns it, and where it lives.
+
+### `apps/mobile/.env` — public (bundled into the app)
+
+| Variable | Owner | Purpose |
+| --- | --- | --- |
+| `EXPO_PUBLIC_FIREBASE_API_KEY` | Ananda | Firebase web API key (public by design) |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Ananda | Firebase Auth domain |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Ananda | Firebase project ID |
+| `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | Ananda | Storage bucket for uploaded files |
+| `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Ananda | Firebase sender ID |
+| `EXPO_PUBLIC_FIREBASE_APP_ID` | Ananda | Firebase app ID |
+| `EXPO_PUBLIC_API_BASE_URL` | Shared | Secure AI backend base URL (used by the API client) |
+
+### `apps/backend/.env` — private (server-side only)
+
+| Variable | Owner | Purpose |
+| --- | --- | --- |
+| `PORT` | Ananda | Express server port (default 4000) |
+| `NODE_ENV` | Ananda | `development` / `production` |
+| `GEMINI_API_KEY` | Ananda | Google Gemini key — **never** exposed to the client |
+| `GEMINI_MODEL` | Ananda | Gemini model name |
+| `FIREBASE_PROJECT_ID` | Ananda | Firebase Admin project ID |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | Ananda | Path to service-account JSON outside the repo (preferred) |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Ananda | Alternative application-default credentials path |
+| `ALLOWED_ORIGINS` | Ananda | Comma-separated CORS origins (empty = allow all, dev only) |
+| `RATE_LIMIT_WINDOW_MS` | Ananda | Rate-limit window in ms |
+| `RATE_LIMIT_MAX` | Ananda | Max requests per window |
+| `LOG_LEVEL` | Ananda | Logger level (`debug`, `info`, `warn`, `error`) |
+
+> **Rule of thumb:** anything `EXPO_PUBLIC_*` is public; everything in
+> `apps/backend/.env` is private. If a value is a secret, it belongs only in the
+> backend and never crosses into the mobile bundle.
+
 ## Verify the setup
 
 ```bash

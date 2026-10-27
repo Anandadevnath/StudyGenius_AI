@@ -1,39 +1,66 @@
 /**
  * theme/colors.js — "Cognitive Luminary" design system palette.
  *
- * Source: proposal Section 12.6 (Style Guide), Tables 7 and 8.
- * These are documented design constants only. No styling, theming logic,
- * context provider, or component consumes them yet.
- *
- * NOTE: light/dark switching and WCAG AA verification are NOT implemented.
+ * Source: proposal §12.6 (Tables 7 and 8). Expanded with the soft tints,
+ * gradients, and semantic tones visible in the design mockups.
  */
 
 export const palettes = {
   light: {
     primary: '#4F46E5',
     primaryPressed: '#4338CA',
+    primarySoft: '#EEF0FF',
     aiAccent: '#06B6D4',
+    aiAccentSoft: '#E0F7FB',
     success: '#10B981',
+    successSoft: '#D1FAE5',
     warning: '#F59E0B',
+    warningSoft: '#FEF3C7',
+    danger: '#EF4444',
+    dangerSoft: '#FEE2E2',
     aiHighlight: '#8B5CF6',
-    background: '#F8FAFC',
+    aiHighlightSoft: '#EDE9FE',
+    background: '#F7F8FC',
     surface: '#FFFFFF',
+    surfaceAlt: '#F1F3FA',
     textHeading: '#0F172A',
     textBody: '#475569',
-    border: '#E2E8F0',
+    textMuted: '#94A3B8',
+    border: '#E5E9F2',
+    iconMuted: '#64748B',
+    headerGradientFrom: '#5B4BE0',
+    headerGradientTo: '#4F46E5',
+    copilotFrom: '#6D5DF6',
+    copilotTo: '#4F46E5',
+    overlay: 'rgba(15, 23, 42, 0.45)',
   },
   dark: {
     primary: '#818CF8',
     primaryPressed: '#6366F1',
+    primarySoft: '#232544',
     aiAccent: '#22D3EE',
+    aiAccentSoft: '#0E3A44',
     success: '#34D399',
+    successSoft: '#0C3A2E',
     warning: '#FBBF24',
+    warningSoft: '#3D2E0A',
+    danger: '#F87171',
+    dangerSoft: '#3D1515',
     aiHighlight: '#A78BFA',
+    aiHighlightSoft: '#2A2144',
     background: '#0F172A',
     surface: '#1E293B',
+    surfaceAlt: '#172033',
     textHeading: '#F1F5F9',
     textBody: '#CBD5E1',
+    textMuted: '#64748B',
     border: '#334155',
+    iconMuted: '#94A3B8',
+    headerGradientFrom: '#4338CA',
+    headerGradientTo: '#3730A3',
+    copilotFrom: '#4338CA',
+    copilotTo: '#312E81',
+    overlay: 'rgba(0, 0, 0, 0.6)',
   },
 };
 

@@ -1,13 +1,15 @@
 # features/
 
-Feature modules. Each folder holds its screens' supporting hooks, components,
-and logic. None contain implementations yet.
+Feature modules — the supporting components for each screen, kept separate so
+screen files stay small and readable (proposal §8.2).
 
-- `auth/` — login, register, forgot password.
-- `library/` — note upload and library.
-- `summaries/` — AI summary flow.
-- `quizzes/` — quiz generation and attempts.
-- `planner/` — study plans.
-- `progress/` — history and statistics.
+- `dashboard/` — CopilotCard, DailyTargetCard, QuickActions, RecentMaterials.
+- `library/` — NoteCard, IngestionBanner, WeeklyRecap.
+- `summary/` — SummaryHeader, KeyPointCard.
+- `quiz/` — OptionRow (lettered option with selected state).
+- `planner/` — WeekStrip, SessionCard.
+- `progress/` — StatTile, WeeklyChart, MasteryRow.
 
-PLACEHOLDER. Not implemented.
+Auth screens live entirely under `app/(auth)/` and reuse `src/components/`.
+Values are still read from `src/data/mockData.js` until the Firestore/AI
+stores are wired.
