@@ -51,7 +51,9 @@ export default function LoginScreen() {
   const handleGoogle = async () => {
     setLocalError(null);
     if (!isGoogleSignInConfigured()) {
-      setLocalError('Google sign-in is not configured yet. Use email and password.');
+      setLocalError(
+        'Google sign-in works on the web version. On the phone, please use email and password.',
+      );
       return;
     }
     setGooglePending(true);
