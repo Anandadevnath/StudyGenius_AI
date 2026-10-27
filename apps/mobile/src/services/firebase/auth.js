@@ -139,6 +139,9 @@ export function isGoogleSignInConfigured() {
  * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{idToken: string}|null>]}
  */
 export function useGoogleAuthRequest() {
+  // On web the redirect is the app origin (http://localhost:8081); on native it
+  // is the app scheme. Both must be registered as Authorized redirect URIs in
+  // the Google OAuth client. See docs/firebase-setup.md.
   const [request, , promptAsync] = Google.useIdTokenAuthRequest({
     webClientId: googleClientIds.webClientId,
     iosClientId: googleClientIds.iosClientId || undefined,
