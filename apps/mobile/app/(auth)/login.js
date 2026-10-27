@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -174,22 +174,25 @@ export default function LoginScreen() {
           onPress={handleSubmit}
         />
 
-        <View style={styles.orRow}>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-          <Text variant="labelSm" color={colors.textMuted} style={styles.orText}>
-            OR CONTINUE WITH
-          </Text>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-        </View>
+        {Platform.OS === 'web' ? (
+          <>
+            <View style={styles.orRow}>
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
+              <Text variant="labelSm" color={colors.textMuted} style={styles.orText}>
+                OR CONTINUE WITH
+              </Text>
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
+            </View>
 
-        <Button
-          label="Continue with Google"
-          variant="outline"
-          icon="logo-google"
-          loading={googlePending}
-          onPress={handleGoogle}
-        />
-        <Button label="Sign in with Campus ID" variant="secondary" icon="business" />
+            <Button
+              label="Continue with Google"
+              variant="outline"
+              icon="logo-google"
+              loading={googlePending}
+              onPress={handleGoogle}
+            />
+          </>
+        ) : null}
 
         <Text variant="bodySm" color={colors.textMuted} style={styles.terms}>
           By continuing, you agree to StudyGenius{' '}
