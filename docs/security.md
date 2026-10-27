@@ -22,19 +22,25 @@ security model and where it lives in the code.
 | Concern | Location |
 | --- | --- |
 | Client config validation | `apps/mobile/src/services/firebase/client.js` |
+| File-type/size validation | `apps/mobile/src/services/firebase/fileValidation.js` |
+| Storage upload/download | `apps/mobile/src/services/firebase/storage.js` |
+| Note metadata (`ownerUid`) | `apps/mobile/src/services/firebase/notes.js` |
+| Offline cache / drafts | `apps/mobile/src/services/database/cache.js` |
 | Backend env validation | `apps/backend/src/config/env.js` |
 | Admin credential strategy | `apps/backend/src/config/firebaseAdmin.js` |
 | Gemini key handling | `apps/backend/src/config/gemini.js` |
-| Token verification (stub) | `apps/backend/src/middleware/auth.js` |
+| Token verification | `apps/backend/src/middleware/auth.js` |
 | Rate limiting | `apps/backend/src/middleware/rateLimit.js` |
 | Safe error responses | `apps/backend/src/middleware/errorHandler.js` |
 | Log redaction | `apps/backend/src/utils/logger.js` |
 
-## Authentication and authorization (planned)
+## Authentication and authorization
 
 - Firebase Authentication only — passwords are never stored directly.
 - Firestore/Storage rules require auth and `ownerUid` ownership:
-  `resource.data.ownerUid == request.auth.uid`.
+  `resource.data.ownerUid == request.auth.uid`. The mobile stores and services
+  always write `ownerUid` and scope reads to the signed-in user.
+- Storage files live under `notes/<uid>/...`; the given owner UID bounds access.
 - The backend verifies the Firebase ID token before accepting AI requests.
 - See [firebase-setup.md](./firebase-setup.md) for rule drafts.
 

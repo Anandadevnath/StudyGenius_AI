@@ -317,7 +317,7 @@ response schemas.
 
 ## Implemented so far
 
-Foundation plus the authentication/service layer:
+Foundation plus the authentication and notes/service layers:
 
 - **Firebase client + Auth service** (`apps/mobile/src/services/firebase/`):
   lazy Firebase app init and an authentication boundary (`register`, `login`,
@@ -325,29 +325,35 @@ Foundation plus the authentication/service layer:
   maps Firebase error codes to safe, user-facing messages.
 - **`authStore`** (`apps/mobile/src/stores/authStore.js`): session state
   (`user`, `status`, `error`, `actionPending`) with session bootstrap.
+- **Notes & files** (`apps/mobile/src/services/firebase/storage.js`,
+  `notes.js`, `fileValidation.js`): validated Storage upload with progress,
+  idempotent delete, and Firestore note metadata (`ownerUid`, paged list).
+  File paths are scoped under the owner UID.
+- **`notesStore`** (`apps/mobile/src/stores/notesStore.js`): cache-first note
+  list, pagination, upload orchestration, and a pending-draft fallback when an
+  upload fails.
+- **SQLite offline cache** (`apps/mobile/src/database/schema.js`,
+  `services/database/cache.js`): cached note metadata and pending uploads.
 - **Backend ID-token verification** (`apps/backend/src/middleware/auth.js` and
   `config/firebaseAdmin.js`): `requireAuth` verifies `Authorization: Bearer
   <idToken>` via Firebase Admin, with an authenticated probe at
   `GET /api/auth/me`.
-- Tests: auth middleware (backend) and auth service/store (mobile) are covered
-  by `npm test`.
+- Tests: auth, file validation, notes, and cache are covered by `npm test`.
 
-Not yet wired to UI: the login/register/reset screens remain placeholders and
-will call `authStore` in the next step.
+Not yet wired to UI: the login/register/reset and library/upload screens remain
+placeholders and will call the stores in the next step.
 
 ## Not implemented yet
 
-No other StudyGenius AI features exist yet. Specifically, none of the
-following are implemented:
+The following are still not implemented:
 
-- Firestore CRUD, real data schemas, security rules (§10).
-- File upload/parsing, camera capture, Firebase Storage (§5.3, §11).
+- Firestore **security rules** and Storage rules (drafted, not enforced) (§10).
 - AI summary generation (§5.4).
 - Quiz generation, scoring, attempts (§5.5).
 - Study planner and AI schedule suggestions (§5.6).
 - Progress tracking and statistics (§5.7).
 - Reminder scheduling / notifications (§5.8).
-- Offline caching and synchronization (§11.1).
+- Camera/image picker and document picker UI (§5.3).
 - Real UI screens, styling, components (§6, §12).
 - The Figma prototype, data model diagram, app icon, feature graphic,
   screenshots, APK, and final report (deliverables for later phases).
