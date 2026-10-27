@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import * as authService from '../services/firebase/auth';
+import { createUserProfile } from '../services/firebase/users';
 
 let unsubscribeAuthListener = null;
 
@@ -44,6 +45,17 @@ export const useAuthStore = create((set, get) => ({
     set({ actionPending: true, error: null });
     try {
       const user = await authService.register({ email, password, displayName });
+      // Create the Firestore profile. A profile failure must not block sign-in,
+      // but it is surfaced so it can be retried from the profile screen.
+      try {
+        await createUserProfile({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName ?? displayName ?? '',
+        });
+      } catch (_profileError) {
+        set({ error: 'Signed in, but your profile could not be saved.' });
+      }
       set({ user, status: 'signedIn', actionPending: false });
       return user;
     } catch (error) {
