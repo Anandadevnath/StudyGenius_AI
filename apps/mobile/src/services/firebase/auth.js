@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { Platform } from 'react-native';
 
 import { getFirebaseAuth } from './client';
 
@@ -128,26 +129,52 @@ export const googleClientIds = {
   androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
 };
 
-/** @returns {boolean} true when at least a web client ID is configured. */
+/** @returns {boolean} true when the current platform's Google client ID is set. */
 export function isGoogleSignInConfigured() {
+  if (Platform.OS === 'android') {
+    return Boolean(googleClientIds.androidClientId);
+  }
+  if (Platform.OS === 'ios') {
+    return Boolean(googleClientIds.iosClientId || googleClientIds.webClientId);
+  }
   return Boolean(googleClientIds.webClientId);
 }
 
 /**
  * React hook for the Google sign-in flow. Returns the prompt function so the
  * screen can trigger it; the credential exchange happens in `signInWithGoogle`.
- * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{idToken: string}|null>]}
+ *
+ * On web the redirect is the app origin (http://localhost:8081); on native it is
+ * the app scheme. Each platform's client ID must be registered as an Authorized
+ * redirect URI in the Google OAuth client. See docs/firebase-setup.md.
+ *
+ * Passing an empty client ID makes expo-auth-session throw, which would crash
+ * the screen, so this always passes the web client ID as a fallback while the
+ * per-platform ID is missing.
+ * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{type: string, params?: object}>]}
  */
 export function useGoogleAuthRequest() {
-  // On web the redirect is the app origin (http://localhost:8081); on native it
-  // is the app scheme. Both must be registered as Authorized redirect URIs in
-  // the Google OAuth client. See docs/firebase-setup.md.
+  // expo-auth-session throws at render time when the platform-specific client
+  // ID is `undefined` (an empty string is accepted). A missing config must
+  // never crash the screen, so pass placeholders and block the flow in
+  // wrappedPrompt instead. See docs/firebase-setup.md for the real IDs.
+  const placeholder = 'unconfigured.apps.googleusercontent.com';
   const [request, , promptAsync] = Google.useIdTokenAuthRequest({
-    webClientId: googleClientIds.webClientId,
-    iosClientId: googleClientIds.iosClientId || undefined,
-    androidClientId: googleClientIds.androidClientId || undefined,
+    webClientId: googleClientIds.webClientId || placeholder,
+    iosClientId: googleClientIds.iosClientId || placeholder,
+    androidClientId: googleClientIds.androidClientId || placeholder,
   });
-  return [request, null, promptAsync];
+
+  const wrappedPrompt = async () => {
+    if (!isGoogleSignInConfigured()) {
+      throw new Error(
+        'Google sign-in is not configured for this platform yet. Use email and password.',
+      );
+    }
+    return promptAsync();
+  };
+
+  return [request, null, wrappedPrompt];
 }
 
 /**
