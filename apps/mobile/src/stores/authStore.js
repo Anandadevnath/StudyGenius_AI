@@ -16,13 +16,19 @@ export const useAuthStore = create((set, get) => ({
       return unsubscribeAuthListener;
     }
 
-    unsubscribeAuthListener = authService.subscribeToAuthChanges((user) => {
-      set({
-        user,
-        status: user ? 'signedIn' : 'signedOut',
-        error: null,
+    try {
+      unsubscribeAuthListener = authService.subscribeToAuthChanges((user) => {
+        set({
+          user,
+          status: user ? 'signedIn' : 'signedOut',
+          error: null,
+        });
       });
-    });
+    } catch (error) {
+      // Firebase is not configured (e.g. web preview without .env). Fall back
+      // to signed-out so the UI still renders instead of crashing.
+      set({ status: 'signedOut', error: error.message });
+    }
 
     return unsubscribeAuthListener;
   },
