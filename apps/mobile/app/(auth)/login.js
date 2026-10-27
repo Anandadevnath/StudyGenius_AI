@@ -11,6 +11,7 @@ import { IconButton } from '../../src/components/IconButton';
 import { SegmentedControl } from '../../src/components/SegmentedControl';
 import { Screen } from '../../src/components/Screen';
 import { useTheme } from '../../src/theme/ThemeProvider';
+import { useAuthStore } from '../../src/stores/authStore';
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -21,8 +22,28 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
+  const [localError, setLocalError] = useState(null);
 
+  const pending = useAuthStore((s) => s.actionPending);
   const isRegister = mode === 'register';
+
+  const handleSubmit = async () => {
+    setLocalError(null);
+    if (!email.trim() || !password) {
+      setLocalError('Enter your email and password.');
+      return;
+    }
+    try {
+      if (isRegister) {
+        await useAuthStore.getState().register({ email, password });
+      } else {
+        await useAuthStore.getState().login({ email, password });
+      }
+      router.replace('/(tabs)');
+    } catch (error) {
+      setLocalError(error.message);
+    }
+  };
 
   return (
     <Screen edges={['top', 'bottom']}>
@@ -109,10 +130,20 @@ export default function LoginScreen() {
           <Badge label="● SSL Secured" tone="success" />
         </View>
 
+        {localError ? (
+          <View style={[styles.errorBox, { backgroundColor: colors.dangerSoft }]}>
+            <Ionicons name="alert-circle" size={16} color={colors.danger} />
+            <Text variant="bodySm" color={colors.danger} style={styles.errorText}>
+              {localError}
+            </Text>
+          </View>
+        ) : null}
+
         <Button
           label={isRegister ? 'Create Account' : 'Sign In to StudyGenius'}
           icon="flash"
-          onPress={() => router.replace('/(tabs)')}
+          loading={pending}
+          onPress={handleSubmit}
         />
 
         <View style={styles.orRow}>
@@ -175,5 +206,13 @@ const styles = StyleSheet.create({
   orRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 },
   line: { flex: 1, height: 1 },
   orText: { letterSpacing: 1 },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+  },
+  errorText: { flex: 1 },
   terms: { textAlign: 'center', marginTop: 4 },
 });

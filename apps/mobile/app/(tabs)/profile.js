@@ -10,12 +10,14 @@ import { Screen } from '../../src/components/Screen';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { SegmentedControl } from '../../src/components/SegmentedControl';
 import { useTheme } from '../../src/theme/ThemeProvider';
+import { useAuthStore } from '../../src/stores/authStore';
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const { colors } = theme;
   const [reminders, setReminders] = useState(true);
   const [summaryStyle, setSummaryStyle] = useState('comprehensive');
+  const handleSignOut = () => useAuthStore.getState().logout();
 
   return (
     <Screen edges={['top']}>
@@ -96,7 +98,7 @@ export default function ProfileScreen() {
           label="Sign Out of Account"
           variant="danger"
           icon="log-out-outline"
-          onPress={() => {}}
+          onPress={handleSignOut}
         />
 
         <Card style={[styles.footer, { backgroundColor: colors.primarySoft }]}>

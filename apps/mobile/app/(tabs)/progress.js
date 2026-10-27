@@ -12,10 +12,12 @@ import { WeeklyChart } from '../../src/features/progress/WeeklyChart';
 import { MasteryRow } from '../../src/features/progress/MasteryRow';
 import { progress } from '../../src/data/mockData';
 import { useTheme } from '../../src/theme/ThemeProvider';
+import { useAuthStore } from '../../src/stores/authStore';
 
 export default function ProgressScreen() {
   const theme = useTheme();
   const { colors } = theme;
+  const handleSignOut = () => useAuthStore.getState().logout();
 
   return (
     <Screen edges={['top']}>
@@ -76,7 +78,7 @@ export default function ProgressScreen() {
           label="Sign Out of Account"
           variant="danger"
           icon="log-out-outline"
-          onPress={() => {}}
+          onPress={handleSignOut}
         />
       </ScrollView>
     </Screen>

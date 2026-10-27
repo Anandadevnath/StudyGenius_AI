@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
@@ -28,8 +28,36 @@ function useDesignFonts() {
   return loaded || timedOut;
 }
 
+/**
+ * Protected-route guard (proposal workstream: Navigation & core screens).
+ * Sends unauthenticated users to login and authenticated users into the app.
+ * The welcome screen (index) stays public; auth screens stay public.
+ */
+function useAuthRedirect() {
+  const status = useAuthStore((s) => s.status);
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'initializing') {
+      return;
+    }
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const onWelcome = segments.length === 0;
+    const isSignedIn = status === 'signedIn';
+
+    if (!isSignedIn && !inAuthGroup && !onWelcome) {
+      router.replace('/(auth)/login');
+    } else if (isSignedIn && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
+  }, [status, segments, router]);
+}
+
 export default function RootLayout() {
   const fontsReady = useDesignFonts();
+  useAuthRedirect();
 
   useEffect(() => {
     useAuthStore.getState().bootstrap();
