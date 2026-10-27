@@ -33,22 +33,31 @@ These six values are **public client configuration** — safe in the app bundle.
   later).
 - **Storage**: enable it and note the bucket name.
 
-## 4. Security rules (write later)
+## 4. Security rules
 
-Rules are the real client-side boundary because the app talks to Firestore
-directly. Require auth and enforce `ownerUid` ownership:
+Rules are the real boundary because the app talks to Firestore/Storage directly.
+The rules live in the repository and enforce authentication plus `ownerUid`
+ownership:
 
-```
-// Firestore (draft — refine during implementation)
-match /notes/{noteId} {
-  allow read, write: if request.auth != null
-    && request.resource.data.ownerUid == request.auth.uid;
-}
-```
+- [`firestore.rules`](../firestore.rules) — all seven collections; reads/writes
+  require `resource.data.ownerUid == request.auth.uid` (creates require
+  `request.resource.data.ownerUid == request.auth.uid`); `users/{uid}` is keyed
+  by uid; everything else is denied.
+- [`storage.rules`](../storage.rules) — files under `notes/{uid}/...`; owner only,
+  10 MB max, allowed content types matching the client validation.
 
-Storage rules should restrict access to each user's files and validate allowed
-paths and file limits where supported. Rules are **created manually** in the
-console — not by this repository.
+Apply them with **either**:
+
+1. **Firebase console (manual, no CLI):** Firestore Database → **Rules** → paste
+   `firestore.rules` → **Publish**; then Storage → **Rules** → paste
+   `storage.rules` → **Publish**.
+2. **Firebase CLI:**
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   firebase deploy --only firestore:rules,storage:rules --project study-ai-15805
+   ```
+   (`firebase.json` at the repo root already points at both rule files.)
 
 ## 5. Backend Admin credentials
 
