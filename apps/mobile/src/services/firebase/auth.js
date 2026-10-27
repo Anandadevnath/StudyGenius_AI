@@ -5,9 +5,16 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithCredential,
 } from 'firebase/auth';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 
 import { getFirebaseAuth } from './client';
+
+// Required so the popup/redirect resolves on web.
+WebBrowser.maybeCompleteAuthSession();
 
 const AUTH_ERROR_MESSAGES = {
   'auth/email-already-in-use': 'That email address is already registered.',
@@ -111,6 +118,51 @@ export async function getIdToken() {
   return auth.currentUser.getIdToken();
 }
 
+/**
+ * Google OAuth client IDs (public). Set these in apps/mobile/.env.
+ * See docs/firebase-setup.md for how to create them in Google Cloud.
+ */
+export const googleClientIds = {
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '',
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '',
+  androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
+};
+
+/** @returns {boolean} true when at least a web client ID is configured. */
+export function isGoogleSignInConfigured() {
+  return Boolean(googleClientIds.webClientId);
+}
+
+/**
+ * React hook for the Google sign-in flow. Returns the prompt function so the
+ * screen can trigger it; the credential exchange happens in `signInWithGoogle`.
+ * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{idToken: string}|null>]}
+ */
+export function useGoogleAuthRequest() {
+  const [request, , promptAsync] = Google.useIdTokenAuthRequest({
+    webClientId: googleClientIds.webClientId,
+    iosClientId: googleClientIds.iosClientId || undefined,
+    androidClientId: googleClientIds.androidClientId || undefined,
+  });
+  return [request, null, promptAsync];
+}
+
+/**
+ * Completes Google sign-in with the ID token returned by the Google prompt.
+ * @param {string} idToken
+ * @returns {Promise<object>} normalized user
+ */
+export async function signInWithGoogleIdToken(idToken) {
+  try {
+    const auth = getFirebaseAuth();
+    const credential = GoogleAuthProvider.credential(idToken);
+    const result = await signInWithCredential(auth, credential);
+    return toAuthUser(result.user);
+  } catch (error) {
+    throw toAuthError(error);
+  }
+}
+
 export default {
   register,
   login,
@@ -118,6 +170,8 @@ export default {
   sendPasswordReset,
   subscribeToAuthChanges,
   getIdToken,
+  signInWithGoogleIdToken,
+  isGoogleSignInConfigured,
   toAuthUser,
   toAuthError,
 };

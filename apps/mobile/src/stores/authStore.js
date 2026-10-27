@@ -77,6 +77,19 @@ export const useAuthStore = create((set, get) => ({
 
   clearError: () => set({ error: null }),
 
+  /** Completes Google sign-in from the ID token returned by the prompt. */
+  signInWithGoogleIdToken: async (idToken) => {
+    set({ actionPending: true, error: null });
+    try {
+      const user = await authService.signInWithGoogleIdToken(idToken);
+      set({ user, status: 'signedIn', actionPending: false });
+      return user;
+    } catch (error) {
+      set({ error: error.message, actionPending: false });
+      throw error;
+    }
+  },
+
   /** @returns {Promise<string|null>} */
   getIdToken: () => (get().user ? authService.getIdToken() : Promise.resolve(null)),
 }));

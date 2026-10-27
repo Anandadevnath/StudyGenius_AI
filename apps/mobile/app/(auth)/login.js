@@ -12,6 +12,7 @@ import { SegmentedControl } from '../../src/components/SegmentedControl';
 import { Screen } from '../../src/components/Screen';
 import { useTheme } from '../../src/theme/ThemeProvider';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useGoogleAuthRequest, isGoogleSignInConfigured } from '../../src/services/firebase/auth';
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -23,9 +24,11 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [localError, setLocalError] = useState(null);
+  const [googlePending, setGooglePending] = useState(false);
 
   const pending = useAuthStore((s) => s.actionPending);
   const isRegister = mode === 'register';
+  const [, , promptGoogle] = useGoogleAuthRequest();
 
   const handleSubmit = async () => {
     setLocalError(null);
@@ -42,6 +45,29 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (error) {
       setLocalError(error.message);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setLocalError(null);
+    if (!isGoogleSignInConfigured()) {
+      setLocalError('Google sign-in is not configured yet. Use email and password.');
+      return;
+    }
+    setGooglePending(true);
+    try {
+      const result = await promptGoogle();
+      if (result?.type !== 'success') {
+        setGooglePending(false);
+        return; // user cancelled or dismissed
+      }
+      const idToken = result.params.id_token;
+      await useAuthStore.getState().signInWithGoogleIdToken(idToken);
+      router.replace('/(tabs)');
+    } catch (error) {
+      setLocalError(error.message);
+    } finally {
+      setGooglePending(false);
     }
   };
 
@@ -154,7 +180,13 @@ export default function LoginScreen() {
           <View style={[styles.line, { backgroundColor: colors.border }]} />
         </View>
 
-        <Button label="Continue with Google" variant="outline" fullWidth />
+        <Button
+          label="Continue with Google"
+          variant="outline"
+          icon="logo-google"
+          loading={googlePending}
+          onPress={handleGoogle}
+        />
         <Button label="Sign in with Campus ID" variant="secondary" icon="business" />
 
         <Text variant="bodySm" color={colors.textMuted} style={styles.terms}>
