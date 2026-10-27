@@ -1,21 +1,55 @@
 import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
-/**
- * Bottom tab navigation (PLACEHOLDER).
- *
- * Proposal ref: Section 6 — five bottom navigation tabs:
- * Home, Library, Planner, Progress, Profile.
- *
- * Icons/theme styling are intentionally minimal. No feature logic here.
- */
+import { useTheme } from '../../src/theme/ThemeProvider';
+
 export default function TabsLayout() {
+  const theme = useTheme();
+
+  const icon = (name, focused) => (
+    <Ionicons
+      name={focused ? name : `${name}-outline`}
+      size={22}
+      color={focused ? theme.colors.primary : theme.colors.textMuted}
+    />
+  );
+
   return (
-    <Tabs screenOptions={{ headerShown: true }}>
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="library" options={{ title: 'Library' }} />
-      <Tabs.Screen name="planner" options={{ title: 'Planner' }} />
-      <Tabs.Screen name="progress" options={{ title: 'Progress' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textMuted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: { fontFamily: theme.fontFamilies.labelMedium, fontSize: 11 },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{ title: 'Home', tabBarIcon: ({ focused }) => icon('home', focused) }}
+      />
+      <Tabs.Screen
+        name="library"
+        options={{ title: 'Library', tabBarIcon: ({ focused }) => icon('book', focused) }}
+      />
+      <Tabs.Screen
+        name="planner"
+        options={{ title: 'Planner', tabBarIcon: ({ focused }) => icon('calendar', focused) }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{ title: 'Progress', tabBarIcon: ({ focused }) => icon('trending-up', focused) }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: 'Profile', tabBarIcon: ({ focused }) => icon('person-circle', focused) }}
+      />
     </Tabs>
   );
 }

@@ -1,21 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
 /**
- * Screen 2b: Register (PLACEHOLDER).
+ * Screen 2: Login / Register.
  *
- * Proposal ref: Section 6, screen 2. NOT IMPLEMENTED.
+ * The design uses a single screen with Sign In and Register tabs (proposal
+ * Table 6), so this route redirects to the login screen where the tabs live.
  */
 export default function RegisterScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <Text style={styles.note}>Placeholder. Account creation is not implemented yet.</Text>
-    </View>
-  );
+  return <Redirect href="/(auth)/login" />;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 26, fontWeight: '700', color: '#0F172A' },
-  note: { fontSize: 12, color: '#94A3B8', marginTop: 12, textAlign: 'center' },
-});

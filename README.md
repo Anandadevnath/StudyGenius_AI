@@ -317,7 +317,7 @@ response schemas.
 
 ## Implemented so far
 
-Foundation plus the authentication and notes/service layers:
+Foundation plus the authentication, notes/service layers, and the full UI:
 
 - **Firebase client + Auth service** (`apps/mobile/src/services/firebase/`):
   lazy Firebase app init and an authentication boundary (`register`, `login`,
@@ -338,23 +338,32 @@ Foundation plus the authentication and notes/service layers:
   `config/firebaseAdmin.js`): `requireAuth` verifies `Authorization: Bearer
   <idToken>` via Firebase Admin, with an authenticated probe at
   `GET /api/auth/me`.
-- Tests: auth, file validation, notes, and cache are covered by `npm test`.
+- **Complete UI (all 8 screens)** matching the "Cognitive Luminary" design:
+  Welcome, Login/Register, Home Dashboard, Notes Library, AI Summary, AI Quiz,
+  Study Planner, and Progress & Profile. A reusable component library
+  (`apps/mobile/src/components/`) and theme tokens + `ThemeProvider`
+  (`apps/mobile/src/theme/`) back every screen, with the Plus Jakarta Sans /
+  Inter fonts bundled in `assets/fonts/`. The 5-tab bottom navigation uses the
+  proposal's icons.
+- Tests: auth, file validation, notes, cache, and the UI components/theme
+  fixtures are covered by `npm test`.
 
-Not yet wired to UI: the login/register/reset and library/upload screens remain
-placeholders and will call the stores in the next step.
+The screens currently render from `src/data/mockData.js`. Wiring them to the
+real stores (Firebase Auth, Firestore, the AI backend) is the next step, so no
+screen claims live data yet.
 
 ## Not implemented yet
 
 The following are still not implemented:
 
 - Firestore **security rules** and Storage rules (drafted, not enforced) (§10).
-- AI summary generation (§5.4).
+- AI summary generation and the backend summary endpoint (§5.4).
 - Quiz generation, scoring, attempts (§5.5).
-- Study planner and AI schedule suggestions (§5.6).
-- Progress tracking and statistics (§5.7).
+- Study planner AI suggestions and saved plans (§5.6).
+- Progress tracking from real attempts (§5.7).
 - Reminder scheduling / notifications (§5.8).
-- Camera/image picker and document picker UI (§5.3).
-- Real UI screens, styling, components (§6, §12).
+- Camera/image picker and document picker wired to the Library screen (§5.3).
+- Screens are **UI-only**: they render mock data, not live Firestore/AI data.
 - The Figma prototype, data model diagram, app icon, feature graphic,
   screenshots, APK, and final report (deliverables for later phases).
 

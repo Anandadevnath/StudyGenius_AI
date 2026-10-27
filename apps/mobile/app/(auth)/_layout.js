@@ -1,18 +1,15 @@
 import { Stack } from 'expo-router';
 
 /**
- * Auth group layout (PLACEHOLDER).
- *
- * Proposal ref: Section 6, screen 2 (Login / Register) and Section 5.1
- * (password reset). No Firebase Authentication flows are implemented. This
- * layout only groups the placeholder auth screens for routing.
+ * Auth group layout — Login/Register (screen 2) and password reset.
+ * Headers are hidden because each screen renders its own custom header.
  */
 export default function AuthLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="login" options={{ title: 'Login' }} />
-      <Stack.Screen name="register" options={{ title: 'Register' }} />
-      <Stack.Screen name="forgot-password" options={{ title: 'Reset Password' }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="forgot-password" />
     </Stack>
   );
 }
