@@ -13,12 +13,16 @@ import { Platform } from 'react-native';
 import { getFirebaseAuth } from './client';
 
 /**
- * expo-auth-session pulls in native modules that are absent in some runtimes
- * (e.g. Expo Go on Android). Import it lazily so a missing native module never
- * crashes app startup — only the Google flow is affected.
+ * Loads the Google OAuth modules. On web these work everywhere. On native they
+ * pull in Expo native modules that may be absent at runtime (Expo Go), so they
+ * are only loaded on web — native Google sign-in requires a development build
+ * and stays disabled otherwise. A missing module never crashes the app.
  * @returns {{Google: object|null, WebBrowser: object|null}}
  */
 function loadGoogleModules() {
+  if (Platform.OS !== 'web') {
+    return { Google: null, WebBrowser: null };
+  }
   try {
     const WebBrowser = require('expo-web-browser');
     const Google = require('expo-auth-session/providers/google');
@@ -141,29 +145,22 @@ export const googleClientIds = {
   androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '',
 };
 
-/** @returns {boolean} true when the current platform's Google client ID is set. */
+/** @returns {boolean} true when Google sign-in can run on this platform. */
 export function isGoogleSignInConfigured() {
-  if (Platform.OS === 'android') {
-    return Boolean(googleClientIds.androidClientId);
-  }
-  if (Platform.OS === 'ios') {
-    return Boolean(googleClientIds.iosClientId || googleClientIds.webClientId);
+  // Google OAuth is wired for web only. Native requires a development build
+  // (Expo Go lacks the needed native modules and signing key), so it stays off.
+  if (Platform.OS !== 'web') {
+    return false;
   }
   return Boolean(googleClientIds.webClientId);
 }
 
 /**
  * React hook for the Google sign-in flow. Returns the prompt function so the
- * screen can trigger it; the credential exchange happens in `signInWithGoogle`.
- *
- * On web the redirect is the app origin (http://localhost:8081); on native it is
- * the app scheme. Each platform's client ID must be registered as an Authorized
- * redirect URI in the Google OAuth client. See docs/firebase-setup.md.
- *
- * Passing an empty client ID makes expo-auth-session throw, which would crash
- * the screen, so this always passes the web client ID as a fallback while the
- * per-platform ID is missing.
- * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{type: string, params?: object}>]}
+ * screen can trigger it; the credential exchange happens in
+ * `signInWithGoogleIdToken`. Google is supported on web only; on native the
+ * returned prompt throws a clear message (a development build is required).
+ * @returns {[object|null, object|null, () => Promise<object>]}
  */
 export function useGoogleAuthRequest() {
   const { Google } = loadGoogleModules();
@@ -188,11 +185,20 @@ async function unavailableGoogle() {
  */
 function useConfiguredGoogleRequest(Google) {
   const placeholder = 'unconfigured.apps.googleusercontent.com';
-  const [request, , promptAsync] = Google.useIdTokenAuthRequest({
-    webClientId: googleClientIds.webClientId || placeholder,
-    iosClientId: googleClientIds.iosClientId || placeholder,
-    androidClientId: googleClientIds.androidClientId || placeholder,
-  });
+  // On web, expo-auth-session defaults the redirect to origin + '/', which does
+  // not match the registered URI. Pass an explicit redirect that matches the
+  // Google Cloud "Authorized redirect URIs" entry.
+  const webRedirectUri = Platform.OS === 'web' ? 'http://localhost:8081' : undefined;
+
+  const [request, , promptAsync] = Google.useIdTokenAuthRequest(
+    {
+      webClientId: googleClientIds.webClientId || placeholder,
+      iosClientId: googleClientIds.iosClientId || placeholder,
+      androidClientId: googleClientIds.androidClientId || placeholder,
+      ...(webRedirectUri ? { redirectUri: webRedirectUri } : {}),
+    },
+    { native: 'studygeniusai:/oauthredirect' },
+  );
 
   const wrappedPrompt = async () => {
     if (!isGoogleSignInConfigured()) {
