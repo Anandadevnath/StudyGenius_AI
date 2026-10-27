@@ -3,8 +3,10 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider } from '../src/theme/ThemeProvider';
+import { ToastProvider } from '../src/components/Toast';
 import { useAuthStore } from '../src/stores/authStore';
 
 /**
@@ -69,15 +71,19 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="summary/index" />
-        <Stack.Screen name="quiz/index" />
-      </Stack>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="summary/index" />
+            <Stack.Screen name="quiz/index" />
+          </Stack>
+        </ToastProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

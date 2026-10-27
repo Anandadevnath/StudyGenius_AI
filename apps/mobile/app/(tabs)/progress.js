@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Text } from '../../src/components/Text';
@@ -7,6 +8,8 @@ import { Badge } from '../../src/components/Badge';
 import { Button } from '../../src/components/Button';
 import { Screen } from '../../src/components/Screen';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { ConfirmDialog } from '../../src/components/ConfirmDialog';
+import { useToast } from '../../src/components/Toast';
 import { StatTile } from '../../src/features/progress/StatTile';
 import { WeeklyChart } from '../../src/features/progress/WeeklyChart';
 import { MasteryRow } from '../../src/features/progress/MasteryRow';
@@ -17,7 +20,14 @@ import { useAuthStore } from '../../src/stores/authStore';
 export default function ProgressScreen() {
   const theme = useTheme();
   const { colors } = theme;
-  const handleSignOut = () => useAuthStore.getState().logout();
+  const { showToast } = useToast();
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const doSignOut = async () => {
+    setConfirmVisible(false);
+    await useAuthStore.getState().logout();
+    showToast({ tone: 'info', title: 'Signed out', message: 'You have been signed out safely.' });
+  };
 
   return (
     <Screen edges={['top']}>
@@ -78,9 +88,21 @@ export default function ProgressScreen() {
           label="Sign Out of Account"
           variant="danger"
           icon="log-out-outline"
-          onPress={handleSignOut}
+          onPress={() => setConfirmVisible(true)}
         />
       </ScrollView>
+
+      <ConfirmDialog
+        visible={confirmVisible}
+        icon="log-out-outline"
+        tone="danger"
+        title="Sign out?"
+        message="You will need to sign in again to access your study materials."
+        confirmLabel="Sign Out"
+        cancelLabel="Stay"
+        onConfirm={doSignOut}
+        onCancel={() => setConfirmVisible(false)}
+      />
     </Screen>
   );
 }

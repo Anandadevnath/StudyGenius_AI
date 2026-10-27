@@ -11,6 +11,7 @@ import { IconButton } from '../../src/components/IconButton';
 import { SegmentedControl } from '../../src/components/SegmentedControl';
 import { PasswordStrengthMeter } from '../../src/components/PasswordStrengthMeter';
 import { Screen } from '../../src/components/Screen';
+import { useToast } from '../../src/components/Toast';
 import { useTheme } from '../../src/theme/ThemeProvider';
 import { useAuthStore } from '../../src/stores/authStore';
 import {
@@ -25,6 +26,7 @@ export default function LoginScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { colors } = theme;
+  const { showToast } = useToast();
 
   const [mode, setMode] = useState('signin');
   const [name, setName] = useState('');
@@ -73,12 +75,23 @@ export default function LoginScreen() {
     try {
       if (isRegister) {
         await useAuthStore.getState().register({ email, password, displayName: name.trim() });
+        showToast({
+          tone: 'success',
+          title: 'Account created',
+          message: `Welcome to StudyGenius, ${name.trim().split(' ')[0] || 'friend'}!`,
+        });
       } else {
         await useAuthStore.getState().login({ email, password });
+        showToast({
+          tone: 'success',
+          title: 'Signed in',
+          message: 'Welcome back to StudyGenius.',
+        });
       }
       router.replace('/(tabs)');
     } catch (error) {
       setSubmitError(error.message);
+      showToast({ tone: 'error', title: 'Sign-in failed', message: error.message });
     }
   };
 
