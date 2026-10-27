@@ -73,28 +73,6 @@ credentials **without committing them**:
 > `*serviceAccount*.json` is git-ignored as a safety net. Do not generate fake
 > credentials during setup.
 
-## 6. Google Sign-In (optional stretch goal)
-
-The app supports Google sign-in when OAuth client IDs are configured. Without
-them the button shows a clear "not configured" message; email/password still
-works.
-
-1. **Enable the provider:** Firebase Console → Authentication → Sign-in method →
-   **Google** → Enable → Save.
-2. **Create OAuth client IDs:** Google Cloud Console → APIs & Services →
-   Credentials → **Create credentials → OAuth client ID**:
-   - **Web application** → add `http://localhost:8081` (and your deploy origin)
-     to Authorized redirect URIs → copy the client ID.
-   - **iOS** / **Android** clients if you build native apps.
-3. **Add to `apps/mobile/.env`:**
-   ```
-   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=...
-   EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
-   EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=
-   ```
-4. Restart the dev server. The "Continue with Google" button completes the flow
-   through `expo-auth-session` and exchanges the ID token with Firebase.
-
 ## Plan caveat
 
 Some Firebase **Storage** configurations and **Cloud Functions** may require
