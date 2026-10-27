@@ -1,5 +1,6 @@
 /**
- * components/Input.js — labelled text input (52–56 dp high, proposal §12.6).
+ * components/Input.js — labelled text input with validation states.
+ * 52–56 dp high, ≥48 dp targets (proposal §12.6, §12.1).
  */
 
 import { StyleSheet, TextInput, View, Pressable } from 'react-native';
@@ -18,12 +19,27 @@ export function Input({
   secureTextEntry = false,
   keyboardType,
   autoCapitalize = 'none',
+  autoComplete,
+  returnKeyType,
+  onSubmitEditing,
+  error,
+  success = false,
   rightAccessory,
+  editable = true,
   style,
 }) {
   const theme = useTheme();
   const { colors } = theme;
   const [hidden, setHidden] = useState(secureTextEntry);
+  const [focused, setFocused] = useState(false);
+
+  const borderColor = error
+    ? colors.danger
+    : success
+      ? colors.success
+      : focused
+        ? colors.primary
+        : colors.border;
 
   return (
     <View style={style}>
@@ -37,8 +53,10 @@ export function Input({
           styles.field,
           {
             backgroundColor: colors.surface,
-            borderColor: colors.border,
+            borderColor,
             borderRadius: theme.radii.input,
+            borderWidth: focused || error || success ? 1.5 : 1,
+            opacity: editable ? 1 : 0.6,
           },
         ]}
       >
@@ -46,11 +64,17 @@ export function Input({
         <TextInput
           value={value}
           onChangeText={onChangeText}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           secureTextEntry={hidden}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+          editable={editable}
           style={[styles.input, { color: colors.textHeading, fontFamily: theme.fontFamilies.body }]}
         />
         {secureTextEntry ? (
@@ -65,6 +89,14 @@ export function Input({
           rightAccessory
         )}
       </View>
+      {error ? (
+        <View style={styles.messageRow}>
+          <Ionicons name="alert-circle" size={13} color={colors.danger} />
+          <Text variant="labelSm" color={colors.danger} style={styles.message}>
+            {error}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -77,9 +109,10 @@ const styles = StyleSheet.create({
     gap: 10,
     height: 54,
     paddingHorizontal: 14,
-    borderWidth: 1,
   },
   input: { flex: 1, height: '100%', fontSize: 15 },
+  messageRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
+  message: { flex: 1 },
 });
 
 export default Input;
