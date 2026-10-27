@@ -8,14 +8,26 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
 } from 'firebase/auth';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import { Platform } from 'react-native';
 
 import { getFirebaseAuth } from './client';
 
-// Required so the popup/redirect resolves on web.
-WebBrowser.maybeCompleteAuthSession();
+/**
+ * expo-auth-session pulls in native modules that are absent in some runtimes
+ * (e.g. Expo Go on Android). Import it lazily so a missing native module never
+ * crashes app startup — only the Google flow is affected.
+ * @returns {{Google: object|null, WebBrowser: object|null}}
+ */
+function loadGoogleModules() {
+  try {
+    const WebBrowser = require('expo-web-browser');
+    const Google = require('expo-auth-session/providers/google');
+    WebBrowser.maybeCompleteAuthSession?.();
+    return { Google, WebBrowser };
+  } catch (_error) {
+    return { Google: null, WebBrowser: null };
+  }
+}
 
 const AUTH_ERROR_MESSAGES = {
   'auth/email-already-in-use': 'That email address is already registered.',
@@ -154,10 +166,27 @@ export function isGoogleSignInConfigured() {
  * @returns {[import('expo-auth-session').AuthRequest|null, object|null, () => Promise<{type: string, params?: object}>]}
  */
 export function useGoogleAuthRequest() {
-  // expo-auth-session throws at render time when the platform-specific client
-  // ID is `undefined` (an empty string is accepted). A missing config must
-  // never crash the screen, so pass placeholders and block the flow in
-  // wrappedPrompt instead. See docs/firebase-setup.md for the real IDs.
+  const { Google } = loadGoogleModules();
+  const available = Boolean(Google?.useIdTokenAuthRequest);
+
+  if (!available) {
+    return [null, null, unavailableGoogle];
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useConfiguredGoogleRequest(Google);
+}
+
+/** Placeholder prompt used when the Google modules cannot be loaded. */
+async function unavailableGoogle() {
+  throw new Error('Google sign-in is not available in this build. Use email and password.');
+}
+
+/**
+ * Calls the expo-auth-session Google hook. Split out so the conditional case
+ * above never calls a hook itself (rules of hooks).
+ */
+function useConfiguredGoogleRequest(Google) {
   const placeholder = 'unconfigured.apps.googleusercontent.com';
   const [request, , promptAsync] = Google.useIdTokenAuthRequest({
     webClientId: googleClientIds.webClientId || placeholder,
